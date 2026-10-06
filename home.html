@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bem-Vindo - Jogo da Velha</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    :root {
+      --bg-1: #060816;
+      --bg-2: #0f172a;
+      --panel: rgba(15, 23, 42, 0.7);
+      --panel-strong: rgba(17, 24, 39, 0.9);
+      --line: rgba(148, 163, 184, 0.2);
+      --gold: #f5d76e;
+      --cyan: #67e8f9;
+      --cyan-strong: #22d3ee;
+      --purple: #8b5cf6;
+      --text: #e2e8f0;
+      --muted: #a5b4cf;
+      --shadow: rgba(34, 211, 238, 0.24);
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(139, 92, 246, 0.42), transparent 22%),
+        radial-gradient(circle at 80% 75%, rgba(34, 211, 238, 0.25), transparent 28%),
+        radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.16), transparent 35%),
+        linear-gradient(135deg, #030712 0%, #0b1020 30%, #0f172a 55%, #090d18 100%);
+      color: var(--text);
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(95px);
+      opacity: 0.75;
+      pointer-events: none;
+      animation: floatGlow 8s ease-in-out infinite alternate;
+    }
+
+    body::before {
+      width: 360px;
+      height: 360px;
+      background: rgba(34, 211, 238, 0.22);
+      top: 5%;
+      left: 10%;
+    }
+
+    body::after {
+      width: 420px;
+      height: 420px;
+      background: rgba(139, 92, 246, 0.26);
+      bottom: 8%;
+      right: 8%;
+      animation-delay: 1.5s;
+    }
+
+    @keyframes floatGlow {
+      from {
+        transform: translateY(0px) scale(1);
+      }
+      to {
+        transform: translateY(-18px) scale(1.08);
+      }
+    }
+
+    .home-card {
+      position: relative;
+      z-index: 1;
+      width: min(820px, 100%);
+      padding: 42px 32px 30px;
+      border-radius: 32px;
+      background: linear-gradient(180deg, rgba(10, 17, 30, 0.88), rgba(8, 13, 24, 0.76));
+      border: 1px solid rgba(103, 232, 249, 0.35);
+      box-shadow:
+        0 0 0 1px rgba(103, 232, 249, 0.14),
+        0 30px 100px rgba(2, 6, 23, 0.88),
+        0 0 60px rgba(34, 211, 238, 0.12),
+        0 0 100px rgba(139, 92, 246, 0.16);
+      backdrop-filter: blur(18px);
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .home-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 32px;
+      background: linear-gradient(135deg, rgba(103, 232, 249, 0.12), rgba(168, 85, 247, 0.08), rgba(245, 215, 110, 0.05));
+      pointer-events: none;
+    }
+
+    .home-card::after {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      pointer-events: none;
+    }
+
+    .hero-score {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      margin: 0 auto 28px;
+      padding: 18px 22px;
+      max-width: 560px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(17, 24, 39, 0.9), rgba(15, 23, 42, 0.72));
+      border: 1px solid rgba(103, 232, 249, 0.22);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 16px 32px rgba(2, 6, 23, 0.28);
+    }
+
+    .score-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 88px;
+    }
+
+    .score-value {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--gold);
+      text-shadow: 0 0 18px rgba(245, 215, 110, 0.35);
+    }
+
+    .score-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.12rem;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .badge {
+      position: relative;
+      z-index: 1;
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 999px;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, rgba(103, 232, 249, 0.12), rgba(139, 92, 246, 0.15));
+      border: 1px solid rgba(103, 232, 249, 0.65);
+      color: var(--cyan);
+      letter-spacing: 0.24rem;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      font-weight: 800;
+      box-shadow: 0 0 25px rgba(34, 211, 238, 0.18), inset 0 0 18px rgba(103, 232, 249, 0.08);
+    }
+
+    h1 {
+      position: relative;
+      z-index: 1;
+      font-size: clamp(2.9rem, 5vw, 4.7rem);
+      line-height: 1.05;
+      letter-spacing: 0.18rem;
+      color: #f8fbff;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      text-shadow: 0 0 26px rgba(103, 232, 249, 0.7), 0 0 42px rgba(139, 92, 246, 0.32);
+    }
+
+    p.description {
+      position: relative;
+      z-index: 1;
+      max-width: 620px;
+      margin: 0 auto 24px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    .highlight-strip {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0 auto 26px;
+      max-width: 620px;
+    }
+
+    .highlight-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      padding: 9px 14px;
+      font-size: 0.76rem;
+      letter-spacing: 0.08rem;
+      text-transform: uppercase;
+      color: var(--text);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .highlight-pill strong {
+      color: var(--gold);
+    }
+
+    .status-panel {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 20px;
+      margin: 0 auto 24px;
+      max-width: 720px;
+      align-items: stretch;
+    }
+
+    .status-box,
+    .preview-box {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.7));
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 22px;
+      padding: 18px 18px 16px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 20px 30px rgba(2, 6, 23, 0.26);
+    }
+
+    .status-label {
+      display: inline-block;
+      font-size: 0.72rem;
+      letter-spacing: 0.12rem;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 12px;
+      font-weight: 800;
+    }
+
+    .status-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      list-style: none;
+    }
+
+    .status-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(2, 6, 23, 0.4);
+      border: 1px solid rgba(148, 163, 184, 0.08);
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .status-list strong {
+      color: var(--text);
+      letter-spacing: 0.04rem;
+    }
+
+    .preview-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 168px;
+      background: radial-gradient(circle at 50% 20%, rgba(103, 232, 249, 0.12), rgba(15, 23, 42, 0.9) 48%);
+    }
+
+    .mini-board {
+      width: 146px;
+      height: 146px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 10px;
+      border-radius: 18px;
+      background: rgba(2, 6, 23, 0.65);
+      border: 1px solid rgba(103, 232, 249, 0.25);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 0 28px rgba(103, 232, 249, 0.12);
+    }
+
+    .mini-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(17, 24, 39, 0.9), rgba(15, 23, 42, 0.8));
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      font-size: 1.7rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .mini-cell.x {
+      color: var(--cyan);
+      text-shadow: 0 0 18px rgba(103, 232, 249, 0.4);
+    }
+
+    .mini-cell.o {
+      color: var(--gold);
+      text-shadow: 0 0 18px rgba(245, 215, 110, 0.4);
+    }
+
+    .features-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .feature-item {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7));
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 20px;
+      padding: 18px 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 18px 30px rgba(2, 6, 23, 0.35);
+      transform: translateY(0);
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .feature-item:hover {
+      transform: translateY(-4px);
+      border-color: rgba(103, 232, 249, 0.45);
+      box-shadow: 0 24px 38px rgba(34, 211, 238, 0.1), 0 0 20px rgba(139, 92, 246, 0.12);
+    }
+
+    .feature-icon {
+      display: block;
+      font-size: 1.9rem;
+      margin-bottom: 8px;
+    }
+
+    .feature-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.05rem;
+      text-transform: uppercase;
+      color: #f8fafc;
+      margin-bottom: 6px;
+    }
+
+    .feature-desc {
+      color: #92a0ba;
+      font-size: 0.76rem;
+    }
+
+    @media (max-width: 700px) {
+      html {
+        overflow-x: clip;
+      }
+
+      body {
+        min-height: 100vh;
+        min-height: 100dvh;
+        align-items: flex-start;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding: 16px;
+      }
+
+      .status-panel {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+
+      .home-card {
+        width: 100%;
+        margin: auto;
+        padding: 30px 20px 24px;
+        border-radius: 24px;
+      }
+
+      .home-card::before {
+        border-radius: 24px;
+      }
+
+      .home-card::after {
+        inset: 8px;
+        border-radius: 16px;
+      }
+
+      h1 {
+        font-size: clamp(2rem, 9vw, 3rem);
+        letter-spacing: 0.08rem;
+      }
+
+      .hero-score {
+        gap: 8px;
+        padding: 14px 10px;
+        width: 100%;
+      }
+
+      .score-box {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .score-value {
+        font-size: 1.35rem;
+      }
+
+      .status-box,
+      .preview-box {
+        padding: 16px 14px;
+      }
+
+      .mini-board {
+        width: min(146px, 100%);
+        height: auto;
+        aspect-ratio: 1;
+      }
+
+      .features-grid {
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+        gap: 12px;
+        margin-bottom: 22px;
+      }
+
+      .feature-item {
+        padding: 16px 12px;
+      }
+
+      .btn-start {
+        min-height: 54px;
+        justify-content: center;
+      }
+
+      footer {
+        margin-top: 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 12px;
+      }
+
+      .home-card {
+        padding: 26px 16px 20px;
+      }
+
+      .badge {
+        padding: 8px 16px;
+        margin-bottom: 16px;
+      }
+
+      .home-campus {
+        font-size: clamp(0.95rem, 4.5vw, 1.25rem);
+        letter-spacing: 0.1rem;
+      }
+
+      .hero-score {
+        gap: 4px;
+        padding: 12px 6px;
+        margin-bottom: 20px;
+      }
+
+      .score-value {
+        font-size: 1.2rem;
+      }
+
+      .score-label {
+        font-size: 0.62rem;
+        letter-spacing: 0.07rem;
+      }
+
+      p.description {
+        font-size: 0.92rem;
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+
+      .highlight-strip {
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+
+      .highlight-pill {
+        gap: 6px;
+        padding: 8px 10px;
+        font-size: 0.68rem;
+        letter-spacing: 0.04rem;
+      }
+
+      .status-box,
+      .preview-box {
+        padding: 14px 12px;
+        border-radius: 18px;
+      }
+
+      .status-list li {
+        gap: 8px;
+        padding: 8px;
+        font-size: 0.76rem;
+      }
+
+      .feature-item {
+        border-radius: 16px;
+      }
+
+      .feature-title {
+        font-size: 0.8rem;
+      }
+
+      .feature-desc {
+        font-size: 0.72rem;
+      }
+
+      .btn-start {
+        width: min(100%, 320px);
+        padding: 17px 20px;
+        font-size: 0.95rem;
+        letter-spacing: 0.1rem;
+      }
+
+      .campus-name {
+        font-size: 0.82rem;
+        letter-spacing: 0.08rem;
+      }
+
+      footer {
+        font-size: 0.68rem;
+        letter-spacing: 0.05rem;
+      }
+    }
+
+    @media (max-width: 360px) {
+      body {
+        padding: 10px;
+      }
+
+      .home-card {
+        padding: 24px 14px 18px;
+      }
+
+      .home-campus {
+        letter-spacing: 0.06rem;
+      }
+
+      .score-label {
+        font-size: 0.58rem;
+      }
+
+      .status-list strong {
+        font-size: 0.72rem;
+      }
+
+      .feature-item {
+        padding: 14px 10px;
+      }
+
+      .btn-start {
+        padding: 16px 14px;
+      }
+    }
+
+    .btn-container {
+      position: relative;
+      z-index: 1;
+      margin-top: 10px;
+    }
+
+    .btn-start {
+      border: none;
+      border-radius: 999px;
+      padding: 20px 42px;
+      background: linear-gradient(135deg, #67e8f9 0%, #8b5cf6 50%, #f5d76e 100%);
+      color: #03131d;
+      font-weight: 900;
+      font-size: 1.08rem;
+      letter-spacing: 0.15rem;
+      cursor: pointer;
+      box-shadow: 0 18px 36px rgba(103, 232, 249, 0.28), 0 0 25px rgba(139, 92, 246, 0.28);
+      transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      filter: saturate(1.2);
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-start::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.38) 50%, transparent 100%);
+      transform: translateX(-120%);
+      transition: transform 0.7s ease;
+    }
+
+    .btn-start:hover::before {
+      transform: translateX(120%);
+    }
+
+    .btn-start:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 22px 48px rgba(103, 232, 249, 0.35), 0 0 30px rgba(139, 92, 246, 0.35);
+      filter: brightness(1.08) saturate(1.3);
+    }
+
+    .btn-start:active {
+      transform: translateY(0);
+    }
+
+    .campus-name {
+      position: relative;
+      z-index: 1;
+      margin-top: 18px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.12rem;
+      text-transform: uppercase;
+      color: #dfeafc;
+    }
+
+    .home-campus {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: var(--cyan);
+      letter-spacing: 0.18rem;
+      font-size: clamp(1rem, 2vw, 1.5rem);
+      font-weight: 800;
+      text-transform: uppercase;
+      text-shadow: 0 0 18px rgba(103, 232, 249, 0.5), 0 0 28px rgba(139, 92, 246, 0.22);
+    }
+
+    .credits {
+      position: relative;
+      z-index: 1;
+      margin-top: 10px;
+      color: rgba(148, 163, 184, 0.85);
+      font-size: 0.78rem;
+      letter-spacing: 0.06rem;
+      text-transform: uppercase;
+    }
+
+    footer {
+      position: relative;
+      z-index: 1;
+      margin-top: 24px;
+      color: rgba(148, 163, 184, 0.8);
+      font-size: 0.78rem;
+      letter-spacing: 0.08rem;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="home-card">
+    <span class="badge">VG</span>
+    <div class="campus-name home-campus">UNIP - Campus Assis</div>
+    <h1>Jogo da Velha</h1>
+
+    <div class="hero-score">
+      <div class="score-box">
+        <div class="score-value">3</div>
+        <div class="score-label">Níveis</div>
+      </div>
+      <div class="score-box">
+        <div class="score-value">AI</div>
+        <div class="score-label">Modo</div>
+      </div>
+      <div class="score-box">
+        <div class="score-value">∞</div>
+        <div class="score-label">Desafios</div>
+      </div>
+    </div>
+
+    <p class="description">
+      Uma experiência premium com inteligência artificial, visual sofisticado e uma mesa de jogo pronta para competir em estilo.
+    </p>
+
+    <div class="highlight-strip">
+      <span class="highlight-pill"><strong>AI</strong> Estratégia</span>
+      <span class="highlight-pill"><strong>1x1</strong> Local</span>
+      <span class="highlight-pill"><strong>3</strong> Níveis</span>
+    </div>
+
+    <div class="status-panel">
+      <div class="status-box">
+        <span class="status-label">Status da partida</span>
+        <ul class="status-list">
+          <li><span>Modo</span> <strong>IA ativa</strong></li>
+          <li><span>Desafios</span> <strong>3 níveis</strong></li>
+          <li><span>Experiência</span> <strong>Premium</strong></li>
+        </ul>
+      </div>
+
+      <div class="preview-box">
+        <div class="mini-board" aria-label="Preview do tabuleiro">
+          <div class="mini-cell x">X</div>
+          <div class="mini-cell o">O</div>
+          <div class="mini-cell x">X</div>
+          <div class="mini-cell o">O</div>
+          <div class="mini-cell x">X</div>
+          <div class="mini-cell"> </div>
+          <div class="mini-cell"> </div>
+          <div class="mini-cell o">O</div>
+          <div class="mini-cell"> </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-item">
+        <span class="feature-icon">🤖</span>
+        <div class="feature-title">3 Níveis</div>
+        <div class="feature-desc">Fácil, normal e difícil</div>
+      </div>
+
+      <div class="feature-item">
+        <span class="feature-icon">👥</span>
+        <div class="feature-title">2 Jogadores</div>
+        <div class="feature-desc">Com nomes personalizáveis</div>
+      </div>
+
+      <div class="feature-item">
+        <span class="feature-icon">⏱️</span>
+        <div class="feature-title">Estatísticas</div>
+        <div class="feature-desc">Tempo, placar e histórico</div>
+      </div>
+    </div>
+
+    <div class="btn-container">
+      <a class="btn-start" href="index.html">
+        <span>ENTRAR</span>
+        <span>⚡</span>
+      </a>
+    </div>
+
+    <div class="credits">Créditos: Valdecyr Gabryel Bento</div>
+
+  </div>
+</body>
+</html>
